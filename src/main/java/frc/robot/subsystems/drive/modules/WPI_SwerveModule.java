@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.drive.modules;
 
+import com.ThePinkAlliance.core.simulation.ctre.CtrePhysicsSim;
 import com.ThePinkAlliance.core.util.Gains;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
@@ -39,6 +40,9 @@ public class WPI_SwerveModule implements SwerveModule {
 
     this.driveMotor.setInverted(invertDrive);
     this.steerMotor.setInverted(invertSteer);
+
+    CtrePhysicsSim.getInstance().addTalonFX(driveMotor, 2, 5800);
+    CtrePhysicsSim.getInstance().addTalonFX(steerMotor, 2, 5800);
 
     resetEncoders();
   }

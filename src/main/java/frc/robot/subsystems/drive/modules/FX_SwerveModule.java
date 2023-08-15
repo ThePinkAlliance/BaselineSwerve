@@ -16,7 +16,12 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.SwerveModule;
 
-/** Add your docs here. */
+/**
+ * FX Swerve Module class creates a swerve module that utilizes the built-in
+ * control apis for Falcon 500 motors. This gives us the benefit of easily
+ * controlling the motor properties like acceleration, jerk, and max velocity;
+ * without implementing it ourself's.
+ */
 public class FX_SwerveModule implements SwerveModule {
   private PIDController steerController;
 
