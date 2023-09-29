@@ -35,6 +35,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
   /** Creates a new DrivetrainSubsystem. */
   public SwerveSubsystem() {
+    this.gyro = new AHRS();
+
     this.frontRightModule = new WPI_SwerveModule(DriveConstants.kFrontRightTurningMotorPort,
         DriveConstants.kFrontRightDriveMotorPort, DriveConstants.kFrontRightDriveAbsoluteEncoderPort,
         DriveConstants.kFrontRightDriveEncoderReversed, DriveConstants.kFrontRightTurningReversed,
