@@ -30,16 +30,17 @@ public class Constants {
 
   public static final class DriveConstants {
 
-    public static final double kTrackWidth = Units.inchesToMeters(23.75);
     // Distance between right and left wheels
-    public static final double kWheelBase = Units.inchesToMeters(23.75);
+    public static final double kTrackWidth = Units.inchesToMeters(23.75);
 
     // Distance between front and back wheels
+    public static final double kWheelBase = Units.inchesToMeters(23.75);
+
     public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
-        new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
+        new Translation2d(kWheelBase / 2, kTrackWidth / 2),
         new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
-        new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
-        new Translation2d(kWheelBase / 2, kTrackWidth / 2));
+        new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
+        new Translation2d(kWheelBase / 2, -kTrackWidth / 2));
 
     public static final int kFrontLeftDriveMotorPort = 2;
     public static final int kBackLeftDriveMotorPort = 8;
@@ -51,34 +52,38 @@ public class Constants {
     public static final int kFrontRightTurningMotorPort = 4;
     public static final int kBackRightTurningMotorPort = 10;
 
+    /**
+     * Don't changes these unless you know what your doing.
+     * 
+     * Unpon change without necessary module updates this will cause the pods to
+     * oscillate.
+     */
     public static final boolean kFrontLeftTurningReversed = false;
     public static final boolean kBackLeftTurningReversed = false;
     public static final boolean kFrontRightTurningReversed = false;
     public static final boolean kBackRightTurningReversed = false;
 
     public static final boolean kFrontLeftDriveEncoderReversed = true;
-    public static final boolean kBackLeftDriveEncoderReversed = false;
+    public static final boolean kBackLeftDriveEncoderReversed = true;
     public static final boolean kFrontRightDriveEncoderReversed = true;
     public static final boolean kBackRightDriveEncoderReversed = true;
 
+    /**
+     * Port numbers for all the cancoders.
+     */
     public static final int kFrontLeftDriveAbsoluteEncoderPort = 3;
     public static final int kBackLeftDriveAbsoluteEncoderPort = 9;
     public static final int kFrontRightDriveAbsoluteEncoderPort = 6;
     public static final int kBackRightDriveAbsoluteEncoderPort = 12;
 
-    public static final boolean kFrontLeftDriveAbsoluteEncoderReversed = false;
-    public static final boolean kBackLeftDriveAbsoluteEncoderReversed = false;
-    public static final boolean kFrontRightDriveAbsoluteEncoderReversed = false;
-    public static final boolean kBackRightDriveAbsoluteEncoderReversed = false;
-
     /**
      * These values where determined by lining up all the wheels and recording the
      * outputed positions.
      */
-    public static final double kFrontLeftDriveAbsoluteEncoderOffsetRad = 1.90; // 1.9036
-    public static final double kBackLeftDriveAbsoluteEncoderOffsetRad = -1.92; // 1.9236
-    public static final double kFrontRightDriveAbsoluteEncoderOffsetRad = 1.56; // 1.5615
-    public static final double kBackRightDriveAbsoluteEncoderOffsetRad = 1.49; // 1.49563
+    public static final double kFrontLeftDriveAbsoluteEncoderOffsetRad = 0; // 1.9036
+    public static final double kBackLeftDriveAbsoluteEncoderOffsetRad = 0; // 1.9236
+    public static final double kFrontRightDriveAbsoluteEncoderOffsetRad = 0; // 1.5615
+    public static final double kBackRightDriveAbsoluteEncoderOffsetRad = 0; // 1.49563
 
     // This is the max speed without load.
     public static final double kPhysicalMaxSpeedMetersPerSecond = 6;
