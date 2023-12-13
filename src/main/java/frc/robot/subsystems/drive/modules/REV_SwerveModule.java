@@ -5,9 +5,11 @@
 package frc.robot.subsystems.drive.modules;
 
 import com.ThePinkAlliance.core.util.Gains;
+import com.ctre.phoenix.sensors.AbsoluteSensorRange;
 import com.ctre.phoenix.sensors.WPI_CANCoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -31,8 +33,8 @@ public class REV_SwerveModule implements SwerveModule {
 
   public REV_SwerveModule(int steerId, int driveId, int canCoderId, boolean invertDrive, boolean invertSteer,
       double absoluteEncoderOffsetRad,
-      Gains steerGains, String network) {
-    this.canCoder = new WPI_CANCoder(canCoderId, network);
+      Gains steerGains) {
+    this.canCoder = new WPI_CANCoder(canCoderId);
     this.steerMotor = new CANSparkMax(steerId, MotorType.kBrushless);
     this.driveMotor = new CANSparkMax(driveId, MotorType.kBrushless);
 
@@ -47,6 +49,9 @@ public class REV_SwerveModule implements SwerveModule {
     this.driveMotor.setInverted(invertDrive);
     this.steerMotor.setInverted(invertSteer);
 
+    this.driveMotor.setIdleMode(IdleMode.kBrake);
+    this.canCoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
+
     resetEncoders();
   }
 
@@ -55,7 +60,7 @@ public class REV_SwerveModule implements SwerveModule {
    */
   @Override
   public double getDrivePosition() {
-    return ((driveEncoder.getPosition() / driveEncoder.getCountsPerRevolution())
+    return ((driveEncoder.getPosition())
         * Constants.ModuleConstants.kDriveMotorGearRatio)
         * (Constants.ModuleConstants.kWheelDiameterMeters * Math.PI);
   }
@@ -79,7 +84,8 @@ public class REV_SwerveModule implements SwerveModule {
      * It might be necessary to change the constant because it does not take into
      * account the gear ratio.
      */
-    return driveEncoder.getVelocity() * 0.0015585245;
+    return ((driveMotor.getEncoder().getVelocity() / 60) * Constants.ModuleConstants.kDriveMotorGearRatio)
+        * (Constants.ModuleConstants.kWheelDiameterMeters * Math.PI);
   }
 
   /**
@@ -130,7 +136,8 @@ public class REV_SwerveModule implements SwerveModule {
   @Override
   public void setDesiredState(SwerveModuleState state) {
     state = SwerveModuleState.optimize(state, getState().angle);
-    driveMotor.set(state.speedMetersPerSecond / Constants.DriveConstants.kPhysicalMaxSpeedMetersPerSecond);
+    driveMotor
+        .setVoltage((state.speedMetersPerSecond / Constants.DriveConstants.kPhysicalMaxSpeedMetersPerSecond) * 12);
 
     double output = steerController.calculate(getSteerPosition(), state.angle.getRadians());
     steerMotor.set(output);

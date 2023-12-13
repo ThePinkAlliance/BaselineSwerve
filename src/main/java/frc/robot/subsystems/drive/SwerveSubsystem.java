@@ -15,6 +15,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
@@ -35,7 +36,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   /** Creates a new DrivetrainSubsystem. */
   public SwerveSubsystem(SwerveDriveKinematics kinematics) {
-    this.gyro = new AHRS();
+    this.gyro = new AHRS(SPI.Port.kMXP);
 
     this.frontRightModule = new WPI_SwerveModule(DriveConstants.kFrontRightTurningMotorPort,
         DriveConstants.kFrontRightDriveMotorPort, DriveConstants.kFrontRightDriveAbsoluteEncoderPort,
@@ -58,19 +59,31 @@ public class SwerveSubsystem extends SubsystemBase {
         DriveConstants.kBackLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kSteerGains, "base");
 
     this.kinematics = kinematics;
-
-    this.gyro = new AHRS();
     this.estimator = new SwerveDrivePoseEstimator(
         kinematics, getRotation(), new SwerveModulePosition[] { frontRightModule.getPosition(),
             frontLeftModule.getPosition(), backRightModule.getPosition(),
             backLeftModule
                 .getPosition() },
         new Pose2d());
+    this.calibrateGyro();
   }
 
-  public List<SwerveModulePosition> getPositions() {
-    return List.of(frontRightModule.getPosition(), frontLeftModule.getPosition(), backRightModule.getPosition(),
-        backLeftModule.getPosition());
+  public SwerveModulePosition[] getPositions() {
+    return new SwerveModulePosition[] {
+        frontRightModule.getPosition(),
+        frontLeftModule.getPosition(),
+        backRightModule.getPosition(),
+        backLeftModule.getPosition()
+    };
+  }
+
+  public SwerveModuleState[] getStates() {
+    return new SwerveModuleState[] {
+        frontRightModule.getState(),
+        frontLeftModule.getState(),
+        backRightModule.getState(),
+        backLeftModule.getState()
+    };
   }
 
   public Rotation2d getRotation() {
@@ -97,10 +110,10 @@ public class SwerveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Desired Back Left Angle", states[2].angle.getDegrees());
     SmartDashboard.putNumber("Desired Back Right Angle", states[3].angle.getDegrees());
 
-    SmartDashboard.putNumber("Desired Front Left Power", states[1].speedMetersPerSecond);
-    SmartDashboard.putNumber("Desired Front Right Power", states[0].speedMetersPerSecond);
-    SmartDashboard.putNumber("Desired Back Left Power", states[2].speedMetersPerSecond);
-    SmartDashboard.putNumber("Desired Back Right Power", states[3].speedMetersPerSecond);
+    SmartDashboard.putNumber("Desired Front Left Speed", states[1].speedMetersPerSecond);
+    SmartDashboard.putNumber("Desired Front Right Speed", states[0].speedMetersPerSecond);
+    SmartDashboard.putNumber("Desired Back Left Speed", states[2].speedMetersPerSecond);
+    SmartDashboard.putNumber("Desired Back Right Speed", states[3].speedMetersPerSecond);
 
     frontRightModule.setDesiredState(states[0]);
     frontLeftModule.setDesiredState(states[1]);
@@ -110,6 +123,14 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public Pose2d getCurrentPose() {
     return estimator.getEstimatedPosition();
+  }
+
+  public void resetPose(Pose2d pose2d) {
+    estimator.resetPosition(getRotation(), getPositions(), pose2d);
+  }
+
+  public ChassisSpeeds getSpeeds() {
+    return kinematics.toChassisSpeeds(getStates());
   }
 
   @Override

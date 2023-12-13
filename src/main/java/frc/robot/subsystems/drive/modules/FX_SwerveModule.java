@@ -32,7 +32,6 @@ public class FX_SwerveModule implements SwerveModule {
   private double absoluteEncoderOffsetRad;
 
   private final int SLOT_IDX;
-  private final double MAX_VELOCITY_DRIVE_TICKS;
 
   public FX_SwerveModule(int steerId, int driveId, int canCoderId, boolean invertDrive, boolean invertSteer,
       double absoluteEncoderOffsetRad,
@@ -58,11 +57,6 @@ public class FX_SwerveModule implements SwerveModule {
 
     this.driveMotor.setInverted(invertDrive);
     this.steerMotor.setInverted(invertSteer);
-
-    // I Think this calculation works for max drive velocity in ticks.
-    this.MAX_VELOCITY_DRIVE_TICKS = ((Constants.DriveConstants.kTeleDriveMaxSpeedMetersPerSecond
-        / (Constants.ModuleConstants.kWheelDiameterMeters * Math.PI) / Constants.ModuleConstants.kDriveMotorGearRatio)
-        * 2048);
 
     resetEncoders();
   }
@@ -97,7 +91,8 @@ public class FX_SwerveModule implements SwerveModule {
      * It might be necessary to change the constant because it does not take into
      * account the gear ratio.
      */
-    return driveMotor.getSelectedSensorVelocity() * 0.0015585245;
+    return (((driveMotor.getSelectedSensorVelocity() / 2048) * Constants.ModuleConstants.kDriveMotorGearRatio) * 10)
+        * (Constants.ModuleConstants.kWheelDiameterMeters * Math.PI);
   }
 
   /**
@@ -149,15 +144,9 @@ public class FX_SwerveModule implements SwerveModule {
   public void setDesiredState(SwerveModuleState state) {
     state = SwerveModuleState.optimize(state, getState().angle);
 
-    /*
-     * I think dividing the desired velocity will work. NOTE: I would like to
-     * research and find out.
-     */
-    double desiredVelocity = (state.speedMetersPerSecond / Constants.DriveConstants.kTeleDriveMaxSpeedMetersPerSecond)
-        * MAX_VELOCITY_DRIVE_TICKS / 100;
+    double desiredSpeed = (state.speedMetersPerSecond / Constants.DriveConstants.kTeleDriveMaxSpeedMetersPerSecond);
 
-    driveMotor.set(ControlMode.Velocity,
-        desiredVelocity);
+    driveMotor.set(ControlMode.PercentOutput, desiredSpeed);
 
     double output = steerController.calculate(getSteerPosition(), state.angle.getRadians());
     steerMotor.set(ControlMode.PercentOutput, output);
