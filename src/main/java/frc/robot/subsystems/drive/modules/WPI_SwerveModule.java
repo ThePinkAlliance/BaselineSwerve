@@ -34,6 +34,7 @@ public class WPI_SwerveModule implements SwerveModule {
     private TalonFX driveMotor;
     private TalonFX steerMotor;
     private CANcoder canCoder;
+    private boolean invertSteer;
     public static final double WARNINGTEMP = 55.0;
     private double absoluteEncoderOffsetRad;
 
@@ -65,7 +66,7 @@ public class WPI_SwerveModule implements SwerveModule {
         this.steerController.enableContinuousInput(-Math.PI, Math.PI);
 
         this.driveMotor.setInverted(invertDrive);
-        this.steerMotor.setInverted(invertSteer);
+        this.invertSteer = invertSteer;
 
         this.steerMotor.setNeutralMode(NeutralModeValue.Brake);
         this.driveMotor.setNeutralMode(NeutralModeValue.Brake);
@@ -186,8 +187,13 @@ public class WPI_SwerveModule implements SwerveModule {
                         (state.speedMetersPerSecond / Constants.DriveConstants.kPhysicalMaxSpeedMetersPerSecond) * 12);
 
         double output = steerController.calculate(getSteerPosition(), state.angle.getRadians());
+        if (invertSteer) {
+            output *= -1;
+        }
         Logger.recordOutput("Swerve/" + this.driveMotor.getDeviceID() + "/rpm",
                 this.driveMotor.getRotorVelocity().getValueAsDouble());
+        Logger.recordOutput("Swerve/" + this.driveMotor.getDeviceID() + "/steer",
+                output);
         steerMotor.set(output);
     }
 

@@ -68,14 +68,14 @@ public class JoystickDrive extends Command {
         // Convert from robot centric to field centric.
         Rotation2d robotAngle = swerveSubsystem.getRotation();
 
-        double xField = x * robotAngle.getSin() + y * robotAngle.getCos();
-        double yField = x * robotAngle.getCos() + y * -robotAngle.getSin();
+        // double xField = x * robotAngle.getSin() + y * robotAngle.getCos();
+        // double yField = x * robotAngle.getCos() + y * -robotAngle.getSin();
 
         SmartDashboard.putNumber("Robot Heading", robotAngle.getDegrees());
-        SmartDashboard.putNumber("xField", xField);
-        SmartDashboard.putNumber("yField", yField);
+        SmartDashboard.putNumber("xField", x);
+        SmartDashboard.putNumber("yField", y);
 
-        swerveSubsystem.setStates(new ChassisSpeeds(xField, yField, r));
+        swerveSubsystem.setStates(new ChassisSpeeds(x, y, r));
     }
 
     // Called once the command ends or is interrupted.
