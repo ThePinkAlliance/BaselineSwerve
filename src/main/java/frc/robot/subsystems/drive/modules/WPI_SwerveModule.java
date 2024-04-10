@@ -187,9 +187,6 @@ public class WPI_SwerveModule implements SwerveModule {
                         (state.speedMetersPerSecond / Constants.DriveConstants.kPhysicalMaxSpeedMetersPerSecond) * 12);
 
         double output = steerController.calculate(getSteerPosition(), state.angle.getRadians());
-        if (invertSteer) {
-            output *= -1;
-        }
         Logger.recordOutput("Swerve/" + this.driveMotor.getDeviceID() + "/rpm",
                 this.driveMotor.getRotorVelocity().getValueAsDouble());
         Logger.recordOutput("Swerve/" + this.driveMotor.getDeviceID() + "/steer",
