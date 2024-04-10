@@ -28,7 +28,7 @@ public class RobotContainer {
     }
 
     public void onTelInit() {
-
+        swerveSubsystem.resetGyro();
     }
 
     public void onDisabled() {

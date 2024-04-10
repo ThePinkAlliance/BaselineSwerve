@@ -9,20 +9,23 @@ import java.util.function.Supplier;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.SwerveSubsystem;
+import org.littletonrobotics.junction.Logger;
 
 public class JoystickDrive extends Command {
     private SwerveSubsystem swerveSubsystem;
     private Supplier<Double> xInput, yInput, rotInput;
     private SlewRateLimiter xLimiter, yLimiter;
+    private boolean useFieldCentric;
 
     /** Creates a new JoystickDrive. */
     public JoystickDrive(SwerveSubsystem swerveSubsystem, Supplier<Double> xInput, Supplier<Double> yInput,
             Supplier<Double> rotInput) {
         // Use addRequirements() here to declare subsystem dependencies.
+
+        this.useFieldCentric = true;
 
         this.swerveSubsystem = swerveSubsystem;
         this.xInput = xInput;
@@ -41,13 +44,6 @@ public class JoystickDrive extends Command {
 
     }
 
-    private double throttleLimiter(double input) {
-        double gain = .5;
-
-        return input;
-        // return gain * (input * input * input) + (1 - gain) * input;
-    }
-
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
@@ -61,21 +57,29 @@ public class JoystickDrive extends Command {
         r = r * 1;
 
         // Limit the max acceleration and convert to meters.
-        x = (xLimiter.calculate(throttleLimiter(x)) * Constants.DriveConstants.kTeleDriveMaxSpeedMetersPerSecond);
-        y = (yLimiter.calculate(throttleLimiter(y)) * Constants.DriveConstants.kTeleDriveMaxSpeedMetersPerSecond);
-        r = throttleLimiter(r) * Constants.DriveConstants.kTeleDriveMaxAngularAccelerationUnitsPerSecond;
+        x = (xLimiter.calculate(x) * Constants.DriveConstants.kTeleDriveMaxSpeedMetersPerSecond);
+        y = (yLimiter.calculate(y) * Constants.DriveConstants.kTeleDriveMaxSpeedMetersPerSecond);
+        r = r * Constants.DriveConstants.kTeleDriveMaxAngularAccelerationUnitsPerSecond;
 
         // Convert from robot centric to field centric.
         Rotation2d robotAngle = swerveSubsystem.getRotation();
 
-        // double xField = x * robotAngle.getSin() + y * robotAngle.getCos();
-        // double yField = x * robotAngle.getCos() + y * -robotAngle.getSin();
+        ChassisSpeeds speeds = new ChassisSpeeds();
+        if (useFieldCentric) {
+            double xField = x * robotAngle.getSin() + y * robotAngle.getCos();
+            double yField = x * robotAngle.getCos() + y * -robotAngle.getSin();
 
-        SmartDashboard.putNumber("Robot Heading", robotAngle.getDegrees());
-        SmartDashboard.putNumber("xField", x);
-        SmartDashboard.putNumber("yField", y);
+            speeds = new ChassisSpeeds(xField, yField, r);
+        } else {
+            speeds = new ChassisSpeeds(y, x, r);
+        }
 
-        swerveSubsystem.setStates(new ChassisSpeeds(x, y, r));
+        Logger.recordOutput("Commands/JoystickDrive/vx_input", speeds.vxMetersPerSecond);
+        Logger.recordOutput("Commands/JoystickDrive/vy_input", speeds.vyMetersPerSecond);
+        Logger.recordOutput("Commands/JoystickDrive/omega_input", speeds.omegaRadiansPerSecond);
+        Logger.recordOutput("Commands/JoystickDrive/robot_heading", robotAngle.getDegrees());
+
+        swerveSubsystem.setStates(speeds);
     }
 
     // Called once the command ends or is interrupted.
