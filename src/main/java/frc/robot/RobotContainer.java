@@ -4,20 +4,29 @@
 
 package frc.robot;
 
+import java.util.Optional;
+
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.JoystickMap;
 import frc.robot.commands.drive.JoystickDrive;
+import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.drive.SwerveSubsystem;
 
 public class RobotContainer {
     public final SwerveSubsystem swerveSubsystem;
     public final Joystick driverJoystick;
+    private final VisionSubsystem visionSubsystem;
 
     public RobotContainer() {
         this.swerveSubsystem = new SwerveSubsystem(Constants.DriveConstants.kDriveKinematics);
+        this.visionSubsystem = new VisionSubsystem();
         this.driverJoystick = new Joystick(0);
+
+        this.visionSubsystem.setConsumer(swerveSubsystem::updateVision);
 
         configureAuto();
         configureBindings();

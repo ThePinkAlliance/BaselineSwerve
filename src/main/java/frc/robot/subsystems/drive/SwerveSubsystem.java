@@ -4,12 +4,16 @@
 
 package frc.robot.subsystems.drive;
 
+import java.util.function.Consumer;
+
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -21,6 +25,7 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ModuleConstants;
@@ -209,6 +214,11 @@ public class SwerveSubsystem extends SubsystemBase {
         this.frontLeftModule.setDesiredState(state);
         this.backRightModule.setDesiredState(state);
         this.backLeftModule.setDesiredState(state);
+    }
+
+    public void updateVision(Translation3d pose) {
+        this.estimator.addVisionMeasurement(new Pose2d(pose.getX(), pose.getY(), Rotation2d.fromDegrees(getHeading())),
+                Timer.getFPGATimestamp());
     }
 
     public void resetPose(Pose2d pose2d) {

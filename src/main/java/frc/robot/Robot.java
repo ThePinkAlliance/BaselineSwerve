@@ -35,7 +35,7 @@ public class Robot extends LoggedRobot {
         // and put our
         // autonomous chooser on the dashboard.
 
-        Logger.recordMetadata("ProjectName", "Crescendo");
+        Logger.recordMetadata("ProjectName", "BaselineSwerve");
 
         if (isReal()) {
             // Logger.addDataReceiver(new WPILOGWriter());

@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
@@ -30,6 +32,10 @@ public class Constants {
 
     public static final class OIConstants {
         public static final double kJoystickDeadband = 0.05;
+    }
+
+    public static final class FieldConstants {
+        public static final AprilTagFieldLayout layout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
     }
 
     public static final class DriveConstants {
