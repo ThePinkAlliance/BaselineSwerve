@@ -29,248 +29,244 @@ import org.littletonrobotics.junction.Logger;
 
 public class SwerveSubsystem extends SubsystemBase {
 
-    public SwerveModule frontLeftModule;
-    public SwerveModule frontRightModule;
-    public SwerveModule backLeftModule;
-    public SwerveModule backRightModule;
+  public SwerveModule frontLeftModule;
+  public SwerveModule frontRightModule;
+  public SwerveModule backLeftModule;
+  public SwerveModule backRightModule;
 
-    private SwerveDriveKinematics kinematics;
-    private SwerveDrivePoseEstimator estimator;
+  private SwerveDriveKinematics kinematics;
+  private SwerveDrivePoseEstimator estimator;
 
-    private Pigeon2 gyro;
-    private Field2d field2d;
-    private DataLog log;
-    private DoubleLogEntry xLogEntry;
-    private DoubleLogEntry yLogEntry;
-    private SwerveModule[] modules;
-    private SwerveModulePosition[] lastModulePositionsMeters;
-    private Rotation2d lastGyroYaw;
+  private Pigeon2 gyro;
+  private SwerveModule[] modules;
+  private SwerveModulePosition[] lastModulePositionsMeters;
+  private Rotation2d lastGyroYaw;
 
-    private double lastEpoch = 0;
-    private double lastAngularPos = 0;
+  private double lastEpoch = 0;
+  private double lastAngularPos = 0;
+
+  /**
+   * Creates a Swerve subsystem with the added kinematics.
+   * 
+   * @param kinematics
+   */
+  public SwerveSubsystem(SwerveDriveKinematics kinematics) {
+    this.gyro = new Pigeon2(0, "base");
+
+    this.frontRightModule = new WPI_SwerveModule(DriveConstants.kFrontRightTurningMotorPort,
+        DriveConstants.kFrontRightDriveMotorPort, DriveConstants.kFrontRightDriveAbsoluteEncoderPort,
+        DriveConstants.kFrontRightDriveEncoderReversed, DriveConstants.kFrontRightTurningReversed,
+        DriveConstants.kFrontRightDriveAbsoluteEncoderOffsetRad, ModuleConstants.kFrontRightSteerGains, "base");
+
+    this.frontLeftModule = new WPI_SwerveModule(DriveConstants.kFrontLeftTurningMotorPort,
+        DriveConstants.kFrontLeftDriveMotorPort, DriveConstants.kFrontLeftDriveAbsoluteEncoderPort,
+        DriveConstants.kFrontLeftDriveEncoderReversed, DriveConstants.kFrontLeftTurningReversed,
+        DriveConstants.kFrontLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kFrontLeftSteerGains, "base");
+
+    this.backRightModule = new WPI_SwerveModule(DriveConstants.kBackRightTurningMotorPort,
+        DriveConstants.kBackRightDriveMotorPort, DriveConstants.kBackRightDriveAbsoluteEncoderPort,
+        DriveConstants.kBackRightDriveEncoderReversed, DriveConstants.kBackRightTurningReversed,
+        DriveConstants.kBackRightDriveAbsoluteEncoderOffsetRad, ModuleConstants.kBackRightSteerGains, "base");
+
+    this.backLeftModule = new WPI_SwerveModule(DriveConstants.kBackLeftTurningMotorPort,
+        DriveConstants.kBackLeftDriveMotorPort, DriveConstants.kBackLeftDriveAbsoluteEncoderPort,
+        DriveConstants.kBackLeftDriveEncoderReversed, DriveConstants.kBackLeftTurningReversed,
+        DriveConstants.kBackLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kBackLeftSteerGains, "base");
+
+    this.kinematics = kinematics;
+
+    this.estimator = new SwerveDrivePoseEstimator(
+        kinematics, getRotation(), new SwerveModulePosition[] { frontRightModule.getPosition(),
+            frontLeftModule.getPosition(), backRightModule.getPosition(),
+            backLeftModule
+                .getPosition() },
+        new Pose2d(0, 0, new Rotation2d()), VecBuilder.fill(0.0, 0.0, 0.0),
+        VecBuilder.fill(0.9, 0.9, 0.9));
+    this.modules = new SwerveModule[] { frontRightModule, frontLeftModule, backRightModule, backLeftModule };
+    this.lastModulePositionsMeters = getPositions();
+
+    calibrateGyro();
+  }
+
+  public SwerveModulePosition[] getPositions() {
+    return new SwerveModulePosition[] {
+        frontRightModule.getPosition(),
+        frontLeftModule.getPosition(),
+        backRightModule.getPosition(),
+        backLeftModule.getPosition()
+    };
+  }
+
+  public SwerveModuleState[] getStates() {
+    return new SwerveModuleState[] {
+        frontRightModule.getState(),
+        frontLeftModule.getState(),
+        backRightModule.getState(),
+        backLeftModule.getState()
+    };
+  }
+
+  public StatusSignal<Double> getAccelX() {
+    return gyro.getAccelerationX();
+  }
+
+  public StatusSignal<Double> verticalAccel() {
+    return gyro.getAccelerationY();
+  }
+
+  public Rotation2d getRotation2d() {
+    return gyro.getRotation2d();
+  }
+
+  public double getHeading() {
+    return Math.IEEEremainder(gyro.getAngle() * -1, 360);
+  }
+
+  public double getYaw() {
+    return gyro.getYaw().getValueAsDouble();
+  }
+
+  public Rotation2d getRotation() {
+    return Rotation2d.fromDegrees(getHeading());
+  }
+
+  public void calibrateGyro() {
+  }
+
+  public void setGyro(double angle) {
+    this.gyro.setYaw(angle);
+  }
+
+  public void resetGyro() {
+    this.gyro.setYaw(0);
+  }
+
+  private Twist2d scaleTwist2d(Twist2d twist2d, double factor) {
+    return new Twist2d(twist2d.dx * factor, twist2d.dy * factor, twist2d.dtheta * factor);
+  }
+
+  public void setStates(ChassisSpeeds speeds) {
+    // Looper is how far into the future are we looking
+    double looper = .01;
 
     /**
-     * Creates a Swerve subsystem with the added kinematics.
+     * The three lines below allow you to change the directions of each chassis
+     * speed (x_velocity, y_velocity, theta_velocity).
      * 
-     * @param kinematics
+     * You cannot alter the directions however you like! there are rules!
+     * The only time you need to invert these is when any of these rules are
+     * violated:
+     * - If speeds.vyMetersPerSecond > 0 doesn't move the robot forward.
+     * - If speeds.vyMetersPerSecond < 0 doesn't move the robot backwards.
+     * 
+     * - If speeds.vxMetersPerSecond > 0 doesn't move the robot right.
+     * - If speeds.vxMetersPerSecond < 0 doesn't move the robot left.
+     * 
+     * - If speeds.omegaRadiansPerSecond > 0 doesn't spin the robot
+     * counter-clockwise.
+     * 
+     * Well if your wondering why? its so the robot moves along wpilib's coordinate
+     * frame.
+     * More info:
+     * https://docs.wpilib.org/en/stable/docs/software/basic-programming/coordinate-system.html
      */
-    public SwerveSubsystem(SwerveDriveKinematics kinematics) {
-        DataLogManager.start();
+    speeds.omegaRadiansPerSecond = speeds.omegaRadiansPerSecond * -1;
+    speeds.vxMetersPerSecond = speeds.vxMetersPerSecond * -1;
+    speeds.vyMetersPerSecond = speeds.vyMetersPerSecond * -1;
 
-        log = DataLogManager.getLog();
+    /*
+     * Check the angular drift with this solution & if I doesn't work explore the
+     * possiblity of steer error in swerve pods.
+     * 
+     * NOTE: This can be broken down to smoothen robot driving. Like removing the
+     * looper and etc.
+     */
+    double gyro_update_rate = gyro.getRate();
+    Pose2d currentPose = getCurrentPose();
+    Pose2d desired = new Pose2d(currentPose.getX() + (speeds.vxMetersPerSecond *
+        looper),
+        currentPose.getY() + (speeds.vyMetersPerSecond * looper),
+        currentPose.getRotation().plus(Rotation2d.fromRadians(speeds.omegaRadiansPerSecond)));
 
-        xLogEntry = new DoubleLogEntry(log, "/dt/xPos");
-        yLogEntry = new DoubleLogEntry(log, "/dt/yPos");
+    Twist2d twist_vel = scaleTwist2d(currentPose.log(desired), 1);
+    ChassisSpeeds updated_speeds = new ChassisSpeeds(twist_vel.dx / looper,
+        twist_vel.dy / looper,
+        twist_vel.dtheta);
 
-        this.gyro = new Pigeon2(0, "base");
-        this.field2d = new Field2d();
+    SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
 
-        this.frontRightModule = new WPI_SwerveModule(DriveConstants.kFrontRightTurningMotorPort,
-                DriveConstants.kFrontRightDriveMotorPort, DriveConstants.kFrontRightDriveAbsoluteEncoderPort,
-                DriveConstants.kFrontRightDriveEncoderReversed, DriveConstants.kFrontRightTurningReversed,
-                DriveConstants.kFrontRightDriveAbsoluteEncoderOffsetRad, ModuleConstants.kFrontRightSteerGains, "base");
+    /**
+     * Update the pose2d in advantagekit its not in periodic becase we want to only
+     * send data when the pose changes
+     */
+    Logger.recordOutput("Swerve/Pose", currentPose);
 
-        this.frontLeftModule = new WPI_SwerveModule(DriveConstants.kFrontLeftTurningMotorPort,
-                DriveConstants.kFrontLeftDriveMotorPort, DriveConstants.kFrontLeftDriveAbsoluteEncoderPort,
-                DriveConstants.kFrontLeftDriveEncoderReversed, DriveConstants.kFrontLeftTurningReversed,
-                DriveConstants.kFrontLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kFrontLeftSteerGains, "base");
+    frontRightModule.setDesiredState(states[3]);
+    frontLeftModule.setDesiredState(states[2]);
+    backRightModule.setDesiredState(states[1]);
+    backLeftModule.setDesiredState(states[0]);
+  }
 
-        this.backRightModule = new WPI_SwerveModule(DriveConstants.kBackRightTurningMotorPort,
-                DriveConstants.kBackRightDriveMotorPort, DriveConstants.kBackRightDriveAbsoluteEncoderPort,
-                DriveConstants.kBackRightDriveEncoderReversed, DriveConstants.kBackRightTurningReversed,
-                DriveConstants.kBackRightDriveAbsoluteEncoderOffsetRad, ModuleConstants.kBackRightSteerGains, "base");
+  public void setSpeedModules(double speed) {
+    SwerveModuleState state = new SwerveModuleState(speed, new Rotation2d());
 
-        this.backLeftModule = new WPI_SwerveModule(DriveConstants.kBackLeftTurningMotorPort,
-                DriveConstants.kBackLeftDriveMotorPort, DriveConstants.kBackLeftDriveAbsoluteEncoderPort,
-                DriveConstants.kBackLeftDriveEncoderReversed, DriveConstants.kBackLeftTurningReversed,
-                DriveConstants.kBackLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kBackLeftSteerGains, "base");
+    this.frontRightModule.setDesiredState(state);
+    this.frontLeftModule.setDesiredState(state);
+    this.backRightModule.setDesiredState(state);
+    this.backLeftModule.setDesiredState(state);
+  }
 
-        this.kinematics = kinematics;
+  public void resetPose(Pose2d pose2d) {
+    estimator.resetPosition(getRotation(), getPositions(), pose2d);
+  }
 
-        this.estimator = new SwerveDrivePoseEstimator(
-                kinematics, getRotation(), new SwerveModulePosition[] { frontRightModule.getPosition(),
-                        frontLeftModule.getPosition(), backRightModule.getPosition(),
-                        backLeftModule
-                                .getPosition() },
-                new Pose2d(0, 0, new Rotation2d()), VecBuilder.fill(0.0, 0.0, 0.0),
-                VecBuilder.fill(0.9, 0.9, 0.9));
-        this.modules = new SwerveModule[] { frontRightModule, frontLeftModule, backRightModule, backLeftModule };
-        this.lastModulePositionsMeters = getPositions();
+  public ChassisSpeeds getSpeeds() {
+    return kinematics.toChassisSpeeds(getStates());
+  }
 
-        SmartDashboard.putData("Field", field2d);
+  public Pose2d getCurrentPose() {
+    return estimator.getEstimatedPosition();
+  }
 
-        calibrateGyro();
+  public Pose2d getDifferentPose() {
+    return new Pose2d(getCurrentPose().getX(), getCurrentPose().getY(), getRotation2d());
+  }
+
+  @Override
+  public void periodic() {
+    // This method will be called once per scheduler run
+
+    Logger.recordOutput("Swerve/Front Right Absolute", frontRightModule.getRawAbsoluteAngularPosition());
+    Logger.recordOutput("Swerve/Back Left Absolute", backLeftModule.getRawAbsoluteAngularPosition());
+    Logger.recordOutput("Swerve/Back Right Absolute", backRightModule.getRawAbsoluteAngularPosition());
+    Logger.recordOutput("Swerve/Front Left Absolute", frontLeftModule.getRawAbsoluteAngularPosition());
+
+    Logger.recordOutput("Swerve/Front Right Position", frontRightModule.getDrivePosition());
+    Logger.recordOutput("Swerve/Back Left Position", backLeftModule.getDrivePosition());
+    Logger.recordOutput("Swerve/Back Right Position", backRightModule.getDrivePosition());
+    Logger.recordOutput("Swerve/Front Left Position", frontLeftModule.getDrivePosition());
+    Logger.recordOutput("Swerve/Heading", getHeading());
+    Logger.recordOutput("Swerve/Heading Cont", gyro.getAngle());
+    Logger.recordOutput("Swerve/Continuious Rotation", getRotation2d().getRadians());
+
+    Logger.recordOutput("Swerve/Front Right Temperature", frontRightModule.getMotorTemp());
+    Logger.recordOutput("Swerve/Back Left Temperature", backLeftModule.getMotorTemp());
+    Logger.recordOutput("Swerve/Back Right Temperature", backRightModule.getMotorTemp());
+    Logger.recordOutput("Swerve/Front Left Temperature", frontLeftModule.getMotorTemp());
+
+    Logger.recordOutput("Swerve/Front Right Temperature Overheat Warning", frontRightModule.isMotorOverheated());
+    Logger.recordOutput("Swerve/Back Left Temperature Overheat Warning", backLeftModule.isMotorOverheated());
+    Logger.recordOutput("Swerve/Back Right Temperature Overheat Warning", backRightModule.isMotorOverheated());
+    Logger.recordOutput("Swerve/Front Left Temperature Overheat Warning", frontLeftModule.isMotorOverheated());
+
+    if (lastEpoch != 0) {
+      double currentAngularPos = gyro.getAngle();
+      Logger.recordOutput("Base/Angular Vel Rads",
+          (currentAngularPos - lastAngularPos) * (Math.PI / 180) / (Timer.getFPGATimestamp() - lastEpoch));
+      lastAngularPos = currentAngularPos;
     }
 
-    public SwerveModulePosition[] getPositions() {
-        return new SwerveModulePosition[] {
-                frontRightModule.getPosition(),
-                frontLeftModule.getPosition(),
-                backRightModule.getPosition(),
-                backLeftModule.getPosition()
-        };
-    }
-
-    public SwerveModuleState[] getStates() {
-        return new SwerveModuleState[] {
-                frontRightModule.getState(),
-                frontLeftModule.getState(),
-                backRightModule.getState(),
-                backLeftModule.getState()
-        };
-    }
-
-    public StatusSignal<Double> getAccelX() {
-        return gyro.getAccelerationX();
-    }
-
-    public StatusSignal<Double> verticalAccel() {
-        return gyro.getAccelerationY();
-    }
-
-    public Rotation2d getRotation2d() {
-        return gyro.getRotation2d();
-    }
-
-    public double getHeading() {
-        return Math.IEEEremainder(gyro.getAngle() * -1, 360);
-    }
-
-    public double getYaw() {
-        return gyro.getYaw().getValueAsDouble();
-    }
-
-    public Rotation2d getRotation() {
-        return Rotation2d.fromDegrees(getHeading());
-    }
-
-    public void calibrateGyro() {
-    }
-
-    public void setGyro(double angle) {
-        this.gyro.setYaw(angle);
-    }
-
-    public Field2d getField2d() {
-        return field2d;
-    }
-
-    public void resetGyro() {
-        this.gyro.setYaw(0);
-    }
-
-    private Twist2d scaleTwist2d(Twist2d twist2d, double factor) {
-        return new Twist2d(twist2d.dx * factor, twist2d.dy * factor, twist2d.dtheta * factor);
-    }
-
-    public void setStates(ChassisSpeeds speeds) {
-        // Looper is how far into the future are we looking
-        double looper = .01;
-
-        speeds.omegaRadiansPerSecond = speeds.omegaRadiansPerSecond * -1;
-        speeds.vxMetersPerSecond = speeds.vxMetersPerSecond * -1;
-        speeds.vyMetersPerSecond = speeds.vyMetersPerSecond * -1;
-
-        /*
-         * Check the angular drift with this solution & if I doesn't work explore the
-         * possiblity of steer error in swerve pods.
-         * 
-         * NOTE: This can be broken down to smoothen robot driving. Like removing the
-         * looper and etc.
-         */
-        double gyro_update_rate = gyro.getRate();
-        Pose2d currentPose = getCurrentPose();
-        Pose2d desired = new Pose2d(currentPose.getX() + (speeds.vxMetersPerSecond *
-                looper),
-                currentPose.getY() + (speeds.vyMetersPerSecond * looper),
-                currentPose.getRotation().plus(Rotation2d.fromRadians(speeds.omegaRadiansPerSecond)));
-
-        Twist2d twist_vel = scaleTwist2d(currentPose.log(desired), 1);
-        ChassisSpeeds updated_speeds = new ChassisSpeeds(twist_vel.dx / looper,
-                twist_vel.dy / looper,
-                twist_vel.dtheta);
-
-        Logger.recordOutput("Base/Pose", currentPose);
-
-        SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
-
-        frontRightModule.setDesiredState(states[3]);
-        frontLeftModule.setDesiredState(states[2]);
-        backRightModule.setDesiredState(states[1]);
-        backLeftModule.setDesiredState(states[0]);
-
-        field2d.setRobotPose(getCurrentPose());
-    }
-
-    public void setSpeedModules(double speed) {
-        SwerveModuleState state = new SwerveModuleState(speed, new Rotation2d());
-
-        this.frontRightModule.setDesiredState(state);
-        this.frontLeftModule.setDesiredState(state);
-        this.backRightModule.setDesiredState(state);
-        this.backLeftModule.setDesiredState(state);
-    }
-
-    public void resetPose(Pose2d pose2d) {
-        estimator.resetPosition(getRotation(), getPositions(), pose2d);
-    }
-
-    public ChassisSpeeds getSpeeds() {
-        return kinematics.toChassisSpeeds(getStates());
-    }
-
-    public Pose2d getCurrentPose() {
-        return estimator.getEstimatedPosition();
-    }
-
-    public Pose2d getDifferentPose() {
-        return new Pose2d(getCurrentPose().getX(), getCurrentPose().getY(), getRotation2d());
-    }
-
-    @Override
-    public void periodic() {
-        // This method will be called once per scheduler run
-
-        Logger.recordOutput("Swerve/Front Right Absolute", frontRightModule.getRawAbsoluteAngularPosition());
-        Logger.recordOutput("Swerve/Back Left Absolute", backLeftModule.getRawAbsoluteAngularPosition());
-        Logger.recordOutput("Swerve/Back Right Absolute", backRightModule.getRawAbsoluteAngularPosition());
-        Logger.recordOutput("Swerve/Front Left Absolute", frontLeftModule.getRawAbsoluteAngularPosition());
-
-        Logger.recordOutput("Swerve/Front Right Position", frontRightModule.getDrivePosition());
-        Logger.recordOutput("Swerve/Back Left Position", backLeftModule.getDrivePosition());
-        Logger.recordOutput("Swerve/Back Right Position", backRightModule.getDrivePosition());
-        Logger.recordOutput("Swerve/Front Left Position", frontLeftModule.getDrivePosition());
-        Logger.recordOutput("Swerve/Heading", getHeading());
-        Logger.recordOutput("Swerve/Heading Cont", gyro.getAngle());
-        Logger.recordOutput("Swerve/Continuious Rotation", getRotation2d().getRadians());
-
-        Logger.recordOutput("Swerve/Front Right Temperature", frontRightModule.getMotorTemp());
-        Logger.recordOutput("Swerve/Back Left Temperature", backLeftModule.getMotorTemp());
-        Logger.recordOutput("Swerve/Back Right Temperature", backRightModule.getMotorTemp());
-        Logger.recordOutput("Swerve/Front Left Temperature", frontLeftModule.getMotorTemp());
-
-        Logger.recordOutput("Swerve/Front Right Temperature Overheat Warning", frontRightModule.isMotorOverheated());
-        Logger.recordOutput("Swerve/Back Left Temperature Overheat Warning", backLeftModule.isMotorOverheated());
-        Logger.recordOutput("Swerve/Back Right Temperature Overheat Warning", backRightModule.isMotorOverheated());
-        Logger.recordOutput("Swerve/Front Left Temperature Overheat Warning", frontLeftModule.isMotorOverheated());
-
-        if (lastEpoch != 0) {
-            double currentAngularPos = gyro.getAngle();
-            Logger.recordOutput("Base/Angular Vel Rads",
-                    (currentAngularPos - lastAngularPos) * (Math.PI / 180) / (Timer.getFPGATimestamp() - lastEpoch));
-            lastAngularPos = currentAngularPos;
-        }
-
-        Pose2d pose = getCurrentPose();
-
-        if (pose.getX() != 0 && pose.getY() != 0) {
-            xLogEntry.append(getCurrentPose().getX());
-            yLogEntry.append(getCurrentPose().getY());
-        }
-
-        field2d.setRobotPose(getCurrentPose());
-        estimator.update(getRotation(), getPositions());
-
-        lastEpoch = Timer.getFPGATimestamp();
-    }
+    estimator.update(getRotation(), getPositions());
+    lastEpoch = Timer.getFPGATimestamp();
+  }
 }
