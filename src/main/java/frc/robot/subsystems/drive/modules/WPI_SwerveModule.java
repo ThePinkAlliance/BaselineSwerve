@@ -38,7 +38,7 @@ public class WPI_SwerveModule implements SwerveModule {
   public static final double WARNINGTEMP = 55.0;
   private double absoluteEncoderOffsetRad;
 
-  public WPI_SwerveModule(int steerId, int driveId, int canCoderId, boolean invertDrive, boolean invertSteer,
+  public WPI_SwerveModule(int steerId, int driveId, int canCoderId, boolean invertDrive,
       double absoluteEncoderOffsetRad,
       Gains steerGains, String network) {
     this.canCoder = new CANcoder(canCoderId, network);
@@ -66,7 +66,6 @@ public class WPI_SwerveModule implements SwerveModule {
     this.steerController.enableContinuousInput(-Math.PI, Math.PI);
 
     this.driveMotor.setInverted(invertDrive);
-    this.invertSteer = invertSteer;
 
     this.steerMotor.setNeutralMode(NeutralModeValue.Brake);
     this.driveMotor.setNeutralMode(NeutralModeValue.Brake);

@@ -43,27 +43,27 @@ public class SwerveSubsystem extends SubsystemBase {
    * @param kinematics
    */
   public SwerveSubsystem(SwerveDriveKinematics kinematics) {
-    this.gyro = new Pigeon2(0, "base");
+    this.gyro = new Pigeon2(0, "rio");
 
     this.frontRightModule = new WPI_SwerveModule(DriveConstants.kFrontRightTurningMotorPort,
-        DriveConstants.kFrontRightDriveMotorPort, DriveConstants.kFrontRightDriveAbsoluteEncoderPort,
-        DriveConstants.kFrontRightDriveEncoderReversed, DriveConstants.kFrontRightTurningReversed,
-        DriveConstants.kFrontRightDriveAbsoluteEncoderOffsetRad, ModuleConstants.kFrontRightSteerGains, "base");
+        DriveConstants.kFrontRightDriveMotorPort, DriveConstants.kFrontRightDriveCANCoderPort,
+        DriveConstants.kFrontRightDriveEncoderReversed,
+        DriveConstants.kFrontRightDriveAbsoluteEncoderOffsetRad, ModuleConstants.kFrontRightSteerGains, "rio");
 
     this.frontLeftModule = new WPI_SwerveModule(DriveConstants.kFrontLeftTurningMotorPort,
-        DriveConstants.kFrontLeftDriveMotorPort, DriveConstants.kFrontLeftDriveAbsoluteEncoderPort,
-        DriveConstants.kFrontLeftDriveEncoderReversed, DriveConstants.kFrontLeftTurningReversed,
-        DriveConstants.kFrontLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kFrontLeftSteerGains, "base");
+        DriveConstants.kFrontLeftDriveMotorPort, DriveConstants.kFrontLeftDriveCANCoderPort,
+        DriveConstants.kFrontLeftDriveEncoderReversed,
+        DriveConstants.kFrontLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kFrontLeftSteerGains, "rio");
 
     this.backRightModule = new WPI_SwerveModule(DriveConstants.kBackRightTurningMotorPort,
-        DriveConstants.kBackRightDriveMotorPort, DriveConstants.kBackRightDriveAbsoluteEncoderPort,
-        DriveConstants.kBackRightDriveEncoderReversed, DriveConstants.kBackRightTurningReversed,
-        DriveConstants.kBackRightDriveAbsoluteEncoderOffsetRad, ModuleConstants.kBackRightSteerGains, "base");
+        DriveConstants.kBackRightDriveMotorPort, DriveConstants.kBackRightDriveCANCoderPort,
+        DriveConstants.kBackRightDriveEncoderReversed,
+        DriveConstants.kBackRightDriveAbsoluteEncoderOffsetRad, ModuleConstants.kBackRightSteerGains, "rio");
 
     this.backLeftModule = new WPI_SwerveModule(DriveConstants.kBackLeftTurningMotorPort,
-        DriveConstants.kBackLeftDriveMotorPort, DriveConstants.kBackLeftDriveAbsoluteEncoderPort,
-        DriveConstants.kBackLeftDriveEncoderReversed, DriveConstants.kBackLeftTurningReversed,
-        DriveConstants.kBackLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kBackLeftSteerGains, "base");
+        DriveConstants.kBackLeftDriveMotorPort, DriveConstants.kBackLeftDriveCANCoderPort,
+        DriveConstants.kBackLeftDriveEncoderReversed,
+        DriveConstants.kBackLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kBackLeftSteerGains, "rio");
 
     this.kinematics = kinematics;
 
@@ -191,6 +191,8 @@ public class SwerveSubsystem extends SubsystemBase {
     frontLeftModule.setDesiredState(states[2]);
     backRightModule.setDesiredState(states[1]);
     backLeftModule.setDesiredState(states[0]);
+
+    Logger.recordOutput("Swerve/States", states);
   }
 
   public void setSpeedModules(double speed) {
