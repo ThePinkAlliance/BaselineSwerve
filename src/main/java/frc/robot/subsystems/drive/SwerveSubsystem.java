@@ -15,12 +15,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.util.datalog.DataLog;
-import edu.wpi.first.util.datalog.DoubleLogEntry;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ModuleConstants;
@@ -38,9 +33,6 @@ public class SwerveSubsystem extends SubsystemBase {
   private SwerveDrivePoseEstimator estimator;
 
   private Pigeon2 gyro;
-  private SwerveModule[] modules;
-  private SwerveModulePosition[] lastModulePositionsMeters;
-  private Rotation2d lastGyroYaw;
 
   private double lastEpoch = 0;
   private double lastAngularPos = 0;
@@ -75,6 +67,13 @@ public class SwerveSubsystem extends SubsystemBase {
 
     this.kinematics = kinematics;
 
+    /**
+     * Initalizing the pose estimator.
+     * 
+     * Requires kinematics and an array of swerve module positions on the robot.
+     * The VecBuilders are standard devation coefficients for encoder robot pose
+     * estimate, and the second VecBuilder is for vision robot pose estimate.
+     */
     this.estimator = new SwerveDrivePoseEstimator(
         kinematics, getRotation(), new SwerveModulePosition[] { frontRightModule.getPosition(),
             frontLeftModule.getPosition(), backRightModule.getPosition(),
@@ -82,8 +81,6 @@ public class SwerveSubsystem extends SubsystemBase {
                 .getPosition() },
         new Pose2d(0, 0, new Rotation2d()), VecBuilder.fill(0.0, 0.0, 0.0),
         VecBuilder.fill(0.9, 0.9, 0.9));
-    this.modules = new SwerveModule[] { frontRightModule, frontLeftModule, backRightModule, backLeftModule };
-    this.lastModulePositionsMeters = getPositions();
 
     calibrateGyro();
   }
@@ -181,18 +178,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * NOTE: This can be broken down to smoothen robot driving. Like removing the
      * looper and etc.
      */
-    double gyro_update_rate = gyro.getRate();
     Pose2d currentPose = getCurrentPose();
-    Pose2d desired = new Pose2d(currentPose.getX() + (speeds.vxMetersPerSecond *
-        looper),
-        currentPose.getY() + (speeds.vyMetersPerSecond * looper),
-        currentPose.getRotation().plus(Rotation2d.fromRadians(speeds.omegaRadiansPerSecond)));
-
-    Twist2d twist_vel = scaleTwist2d(currentPose.log(desired), 1);
-    ChassisSpeeds updated_speeds = new ChassisSpeeds(twist_vel.dx / looper,
-        twist_vel.dy / looper,
-        twist_vel.dtheta);
-
     SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
 
     /**
@@ -214,6 +200,11 @@ public class SwerveSubsystem extends SubsystemBase {
     this.frontLeftModule.setDesiredState(state);
     this.backRightModule.setDesiredState(state);
     this.backLeftModule.setDesiredState(state);
+
+    Logger.recordOutput("Swerve/Front Left State", state);
+    Logger.recordOutput("Swerve/Front Right State", state);
+    Logger.recordOutput("Swerve/Back Left State", state);
+    Logger.recordOutput("Swerve/Back Right State", state);
   }
 
   public void resetPose(Pose2d pose2d) {
@@ -259,6 +250,10 @@ public class SwerveSubsystem extends SubsystemBase {
     Logger.recordOutput("Swerve/Back Right Temperature Overheat Warning", backRightModule.isMotorOverheated());
     Logger.recordOutput("Swerve/Front Left Temperature Overheat Warning", frontLeftModule.isMotorOverheated());
 
+    /**
+     * This calculates the current angular velocity. It's mainly used for auto
+     * calibration.
+     */
     if (lastEpoch != 0) {
       double currentAngularPos = gyro.getAngle();
       Logger.recordOutput("Base/Angular Vel Rads",

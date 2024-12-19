@@ -85,9 +85,6 @@ public class WPI_SwerveModule implements SwerveModule {
    */
   @Override
   public double getDrivePosition() {
-    /**
-     * So Pheonix6
-     */
     double position = driveMotor.getRotorPosition().getValueAsDouble();
 
     return (position * Constants.ModuleConstants.kDriveMotorGearRatio)
