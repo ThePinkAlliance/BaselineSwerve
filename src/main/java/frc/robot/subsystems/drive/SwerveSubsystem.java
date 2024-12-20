@@ -48,21 +48,25 @@ public class SwerveSubsystem extends SubsystemBase {
     this.frontRightModule = new WPI_SwerveModule(DriveConstants.kFrontRightTurningMotorPort,
         DriveConstants.kFrontRightDriveMotorPort, DriveConstants.kFrontRightDriveCANCoderPort,
         DriveConstants.kFrontRightDriveEncoderReversed,
+        false,
         DriveConstants.kFrontRightDriveAbsoluteEncoderOffsetRad, ModuleConstants.kFrontRightSteerGains, "rio");
 
     this.frontLeftModule = new WPI_SwerveModule(DriveConstants.kFrontLeftTurningMotorPort,
         DriveConstants.kFrontLeftDriveMotorPort, DriveConstants.kFrontLeftDriveCANCoderPort,
         DriveConstants.kFrontLeftDriveEncoderReversed,
+        false,
         DriveConstants.kFrontLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kFrontLeftSteerGains, "rio");
 
     this.backRightModule = new WPI_SwerveModule(DriveConstants.kBackRightTurningMotorPort,
         DriveConstants.kBackRightDriveMotorPort, DriveConstants.kBackRightDriveCANCoderPort,
         DriveConstants.kBackRightDriveEncoderReversed,
+        false,
         DriveConstants.kBackRightDriveAbsoluteEncoderOffsetRad, ModuleConstants.kBackRightSteerGains, "rio");
 
     this.backLeftModule = new WPI_SwerveModule(DriveConstants.kBackLeftTurningMotorPort,
         DriveConstants.kBackLeftDriveMotorPort, DriveConstants.kBackLeftDriveCANCoderPort,
         DriveConstants.kBackLeftDriveEncoderReversed,
+        false,
         DriveConstants.kBackLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kBackLeftSteerGains, "rio");
 
     this.kinematics = kinematics;
