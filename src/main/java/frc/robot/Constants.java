@@ -40,34 +40,47 @@ public class Constants {
     // Distance between front and back wheels
     public static final double kWheelBase = Units.inchesToMeters(23.75);
 
+    // CAN Network name with both the pigeon and swerve pods.
+    public static final String kCANNetworkName = "rio";
+
+    // DEVNOTE: This is positionally correct fix the wheel direction bug without
+    // changing
+    // this!
     public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
-        new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
-        new Translation2d(kWheelBase / 2, kTrackWidth / 2),
         new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
-        new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
+        new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
+        new Translation2d(-kWheelBase / 2, kTrackWidth / 2),
+        new Translation2d(kWheelBase / 2, kTrackWidth / 2));
 
-    public static final int kFrontLeftDriveMotorPort = 11;
-    public static final int kBackLeftDriveMotorPort = 5;
-    public static final int kFrontRightDriveMotorPort = 8;
-    public static final int kBackRightDriveMotorPort = 2;
+    public static final int kPigeonImuId = 0;
 
-    public static final int kFrontLeftTurningMotorPort = 10;
-    public static final int kBackLeftTurningMotorPort = 4;
-    public static final int kFrontRightTurningMotorPort = 7;
-    public static final int kBackRightTurningMotorPort = 1;
+    public static final int kFrontLeftDriveMotorId = 11;
+    public static final int kBackLeftDriveMotorId = 5;
+    public static final int kFrontRightDriveMotorId = 8;
+    public static final int kBackRightDriveMotorId = 2;
+
+    public static final int kFrontLeftSteerMotorId = 10;
+    public static final int kBackLeftSteerMotorId = 4;
+    public static final int kFrontRightSteerMotorId = 7;
+    public static final int kBackRightSteerMotorId = 1;
 
     /**
      * Port numbers for all the cancoders.
      */
-    public static final int kFrontLeftDriveCANCoderPort = 12;
-    public static final int kBackLeftDriveCANCoderPort = 6;
-    public static final int kFrontRightDriveCANCoderPort = 9;
-    public static final int kBackRightDriveCANCoderPort = 3;
+    public static final int kFrontLeftDriveCANCoderId = 12;
+    public static final int kBackLeftDriveCANCoderId = 6;
+    public static final int kFrontRightDriveCANCoderId = 9;
+    public static final int kBackRightDriveCANCoderId = 3;
 
-    public static final boolean kFrontLeftDriveEncoderReversed = true;
-    public static final boolean kBackLeftDriveEncoderReversed = true;
-    public static final boolean kFrontRightDriveEncoderReversed = false;
-    public static final boolean kBackRightDriveEncoderReversed = false;
+    public static final boolean kFrontLeftDriveReversed = true;
+    public static final boolean kBackLeftDriveReversed = true;
+    public static final boolean kFrontRightDriveReversed = false;
+    public static final boolean kBackRightDriveReversed = false;
+
+    public static final boolean kFrontLeftSteerReversed = false;
+    public static final boolean kBackLeftSteerReversed = false;
+    public static final boolean kFrontRightSteerReversed = false;
+    public static final boolean kBackRightSteerReversed = false;
 
     /**
      * These values where determined by lining up all the wheels and recording the
