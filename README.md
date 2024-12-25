@@ -48,15 +48,41 @@ Let's start with the three subclasses inside [Constants.java](./src/main/java/fr
 
 `DriveConstants` and `ModuleConstants` are the two you will interact with the most as a programmer since both of them are used to make swerve work.
 
-### Configuring physical characteristics
+### Configuring drivetrain properties
 
 So before we jump into changing constants there's a few questions we should ask.
 
-- What's the gear ratio of the swerve pods?
+- What's the gear ratio of the swerve pods? (steer & drive)
 - Do we know the track-width & wheel-base of the drivetrain?
 - Do we know the id's of each modules motors and magnetic encoders?
 - Is there more than one can network?
-- Do we know the maximum drivetrain speed? (meters/sec)
 
 **NOTE:** If your not using falcons for both steering & driving and you still want to use this project you will need to write a custom module implementation which is out of scope of this guide.
 
+Let's start with the motor id's for all the swerve modules in `ModuleConstants` you'll want to make sure that you change them to reflect the motors on each of the respective pods. An example would be blinking the steer & drive motors on the front left module and recording the id's.
+
+```java
+// All the driving ids
+public static final int kFrontLeftDriveMotorId = 11;
+public static final int kBackLeftDriveMotorId = 5;
+public static final int kFrontRightDriveMotorId = 8;
+public static final int kBackRightDriveMotorId = 2;
+
+// All the steering ids
+public static final int kFrontLeftSteerMotorId = 10;
+public static final int kBackLeftSteerMotorId = 4;
+public static final int kFrontRightSteerMotorId = 7;
+public static final int kBackRightSteerMotorId = 1;
+```
+
+After you find all the id's for the motors on each pod we need to do the same thing for the CANCoder which report wheel orientation.
+
+```java
+/**
+ * Port numbers for all the cancoders.
+ */
+public static final int kFrontLeftDriveCANCoderId = 12;
+public static final int kBackLeftDriveCANCoderId = 6;
+public static final int kFrontRightDriveCANCoderId = 9;
+public static final int kBackRightDriveCANCoderId = 3;
+```
