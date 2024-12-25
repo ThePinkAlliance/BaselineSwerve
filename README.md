@@ -39,3 +39,24 @@ The project is comprised of two major folders located in [src/main/java/frc](./s
     RobotContainer will be where you define button bindings for commands, default commands, and autonomous commands. It's where all of your subsytems will be [instantiated](https://stackoverflow.com/a/44315962) and passed to your commands.
 
 ## Configuring Constants
+
+Let's start with the three subclasses inside [Constants.java](./src/main/java/frc/robot/Constants.java).
+
+- DriveConstants
+- ModuleConstants
+- OIConstants
+
+`DriveConstants` and `ModuleConstants` are the two you will interact with the most as a programmer since both of them are used to make swerve work.
+
+### Configuring physical characteristics
+
+So before we jump into changing constants there's a few questions we should ask.
+
+- What's the gear ratio of the swerve pods?
+- Do we know the track-width & wheel-base of the drivetrain?
+- Do we know the id's of each modules motors and magnetic encoders?
+- Is there more than one can network?
+- Do we know the maximum drivetrain speed? (meters/sec)
+
+**NOTE:** If your not using falcons for both steering & driving and you still want to use this project you will need to write a custom module implementation which is out of scope of this guide.
+
