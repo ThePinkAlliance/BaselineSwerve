@@ -20,12 +20,48 @@ public class Constants {
     public static final double kTurningEncoderRot2Rad = kTurningMotorGearRatio * 2 * Math.PI;
     public static final double kDriveEncoderRPM2MeterPerSec = kDriveEncoderRot2Meter / 60;
     public static final double kTurningEncoderRPM2RadPerSec = kTurningEncoderRot2Rad / 60;
-    public static final double kPTurning = 0.47;
 
     public static final Gains kBackLeftSteerGains = new Gains(.34, 0.0, 0);
     public static final Gains kBackRightSteerGains = new Gains(.34, 0.0, 0);
     public static final Gains kFrontRightSteerGains = new Gains(.34, 0.0, 0);
     public static final Gains kFrontLeftSteerGains = new Gains(.34, 0.0, 0);
+
+    public static final boolean kFrontLeftDriveReversed = true;
+    public static final boolean kBackLeftDriveReversed = true;
+    public static final boolean kFrontRightDriveReversed = false;
+    public static final boolean kBackRightDriveReversed = false;
+
+    public static final boolean kFrontLeftSteerReversed = false;
+    public static final boolean kBackLeftSteerReversed = false;
+    public static final boolean kFrontRightSteerReversed = false;
+    public static final boolean kBackRightSteerReversed = false;
+
+    public static final int kFrontLeftDriveMotorId = 11;
+    public static final int kBackLeftDriveMotorId = 5;
+    public static final int kFrontRightDriveMotorId = 8;
+    public static final int kBackRightDriveMotorId = 2;
+
+    public static final int kFrontLeftSteerMotorId = 10;
+    public static final int kBackLeftSteerMotorId = 4;
+    public static final int kFrontRightSteerMotorId = 7;
+    public static final int kBackRightSteerMotorId = 1;
+
+    /**
+     * Port numbers for all the cancoders.
+     */
+    public static final int kFrontLeftDriveCANCoderId = 12;
+    public static final int kBackLeftDriveCANCoderId = 6;
+    public static final int kFrontRightDriveCANCoderId = 9;
+    public static final int kBackRightDriveCANCoderId = 3;
+
+    /**
+     * These values where determined by lining up all the wheels and recording the
+     * outputed positions.
+     */
+    public static final double kFrontLeftDriveAbsoluteEncoderOffsetRad = -0.552;
+    public static final double kBackLeftDriveAbsoluteEncoderOffsetRad = -2.207;
+    public static final double kFrontRightDriveAbsoluteEncoderOffsetRad = 1.446;
+    public static final double kBackRightDriveAbsoluteEncoderOffsetRad = -0.0184;
   }
 
   public static final class OIConstants {
@@ -53,43 +89,6 @@ public class Constants {
         new Translation2d(kWheelBase / 2, kTrackWidth / 2));
 
     public static final int kPigeonImuId = 0;
-
-    public static final int kFrontLeftDriveMotorId = 11;
-    public static final int kBackLeftDriveMotorId = 5;
-    public static final int kFrontRightDriveMotorId = 8;
-    public static final int kBackRightDriveMotorId = 2;
-
-    public static final int kFrontLeftSteerMotorId = 10;
-    public static final int kBackLeftSteerMotorId = 4;
-    public static final int kFrontRightSteerMotorId = 7;
-    public static final int kBackRightSteerMotorId = 1;
-
-    /**
-     * Port numbers for all the cancoders.
-     */
-    public static final int kFrontLeftDriveCANCoderId = 12;
-    public static final int kBackLeftDriveCANCoderId = 6;
-    public static final int kFrontRightDriveCANCoderId = 9;
-    public static final int kBackRightDriveCANCoderId = 3;
-
-    public static final boolean kFrontLeftDriveReversed = true;
-    public static final boolean kBackLeftDriveReversed = true;
-    public static final boolean kFrontRightDriveReversed = false;
-    public static final boolean kBackRightDriveReversed = false;
-
-    public static final boolean kFrontLeftSteerReversed = false;
-    public static final boolean kBackLeftSteerReversed = false;
-    public static final boolean kFrontRightSteerReversed = false;
-    public static final boolean kBackRightSteerReversed = false;
-
-    /**
-     * These values where determined by lining up all the wheels and recording the
-     * outputed positions.
-     */
-    public static final double kFrontLeftDriveAbsoluteEncoderOffsetRad = -0.552;
-    public static final double kBackLeftDriveAbsoluteEncoderOffsetRad = -2.207;
-    public static final double kFrontRightDriveAbsoluteEncoderOffsetRad = 1.446;
-    public static final double kBackRightDriveAbsoluteEncoderOffsetRad = -0.0184;
 
     // This is the max speed without load.
     public static final double kPhysicalMaxSpeedMetersPerSecond = 4.437;

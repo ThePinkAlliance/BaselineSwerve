@@ -10,6 +10,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -45,33 +46,40 @@ public class SwerveSubsystem extends SubsystemBase {
   public SwerveSubsystem(SwerveDriveKinematics kinematics) {
     this.gyro = new Pigeon2(Constants.DriveConstants.kPigeonImuId, Constants.DriveConstants.kCANNetworkName);
 
-    this.frontRightModule = new WPI_SwerveModule(DriveConstants.kFrontRightSteerMotorId,
-        DriveConstants.kFrontRightDriveMotorId, DriveConstants.kFrontRightDriveCANCoderId,
-        DriveConstants.kFrontRightDriveReversed,
-        Constants.DriveConstants.kFrontRightSteerReversed,
-        DriveConstants.kFrontRightDriveAbsoluteEncoderOffsetRad, ModuleConstants.kFrontRightSteerGains,
-        Constants.DriveConstants.kCANNetworkName);
+    this.frontRightModule = new WPI_SwerveModule(
+        ModuleConstants.kFrontRightSteerMotorId,
+        ModuleConstants.kFrontRightDriveMotorId,
+        ModuleConstants.kFrontRightDriveCANCoderId,
+        ModuleConstants.kFrontRightDriveReversed,
+        ModuleConstants.kFrontRightSteerReversed,
+        ModuleConstants.kFrontRightDriveAbsoluteEncoderOffsetRad, ModuleConstants.kFrontRightSteerGains,
+        DriveConstants.kCANNetworkName);
 
-    this.frontLeftModule = new WPI_SwerveModule(DriveConstants.kFrontLeftSteerMotorId,
-        DriveConstants.kFrontLeftDriveMotorId, DriveConstants.kFrontLeftDriveCANCoderId,
-        DriveConstants.kFrontLeftDriveReversed,
-        Constants.DriveConstants.kFrontLeftSteerReversed,
-        DriveConstants.kFrontLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kFrontLeftSteerGains,
-        Constants.DriveConstants.kCANNetworkName);
+    this.frontLeftModule = new WPI_SwerveModule(
+        ModuleConstants.kFrontLeftSteerMotorId,
+        ModuleConstants.kFrontLeftDriveMotorId,
+        ModuleConstants.kFrontLeftDriveCANCoderId,
+        ModuleConstants.kFrontLeftDriveReversed,
+        ModuleConstants.kFrontLeftSteerReversed,
+        ModuleConstants.kFrontLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kFrontLeftSteerGains,
+        DriveConstants.kCANNetworkName);
 
-    this.backRightModule = new WPI_SwerveModule(DriveConstants.kBackRightSteerMotorId,
-        DriveConstants.kBackRightDriveMotorId, DriveConstants.kBackRightDriveCANCoderId,
-        DriveConstants.kBackRightDriveReversed,
-        Constants.DriveConstants.kBackRightSteerReversed,
-        DriveConstants.kBackRightDriveAbsoluteEncoderOffsetRad, ModuleConstants.kBackRightSteerGains,
-        Constants.DriveConstants.kCANNetworkName);
+    this.backRightModule = new WPI_SwerveModule(
+        ModuleConstants.kBackRightSteerMotorId,
+        ModuleConstants.kBackRightDriveMotorId, ModuleConstants.kBackRightDriveCANCoderId,
+        ModuleConstants.kBackRightDriveReversed,
+        ModuleConstants.kBackRightSteerReversed,
+        ModuleConstants.kBackRightDriveAbsoluteEncoderOffsetRad, ModuleConstants.kBackRightSteerGains,
+        DriveConstants.kCANNetworkName);
 
-    this.backLeftModule = new WPI_SwerveModule(DriveConstants.kBackLeftSteerMotorId,
-        DriveConstants.kBackLeftDriveMotorId, DriveConstants.kBackLeftDriveCANCoderId,
-        DriveConstants.kBackLeftDriveReversed,
-        Constants.DriveConstants.kBackLeftSteerReversed,
-        DriveConstants.kBackLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kBackLeftSteerGains,
-        Constants.DriveConstants.kCANNetworkName);
+    this.backLeftModule = new WPI_SwerveModule(
+        ModuleConstants.kBackLeftSteerMotorId,
+        ModuleConstants.kBackLeftDriveMotorId,
+        ModuleConstants.kBackLeftDriveCANCoderId,
+        ModuleConstants.kBackLeftDriveReversed,
+        ModuleConstants.kBackLeftSteerReversed,
+        ModuleConstants.kBackLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kBackLeftSteerGains,
+        DriveConstants.kCANNetworkName);
 
     this.kinematics = kinematics;
 
