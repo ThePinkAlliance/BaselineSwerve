@@ -86,3 +86,39 @@ public static final int kBackLeftDriveCANCoderId = 6;
 public static final int kFrontRightDriveCANCoderId = 9;
 public static final int kBackRightDriveCANCoderId = 3;
 ```
+
+Now that all the motor id's have been configured we can do our first test drive! 🎉
+
+## Configuration test
+
+So we are going to test that all of the motors on the swerve drive move and that the x & y axis on the controller. So, open frc driver station and enable teleop and the wheels should move!
+
+### How are the modules moving?
+
+Well in `RobotContainer.java` there a method called `configureBindings` this method is where all of your button bindings will be.
+
+Here we are telling the `swerveSubsystem` that it will have a default command called `JoystickDrive` which will execute repeatly we also pass the joystick axises via `DoubleSuppliers`.
+
+```java
+private void configureBindings() {
+  this.swerveSubsystem
+      .setDefaultCommand(
+            new JoystickDrive(swerveSubsystem, () -> driverJoystick.getRawAxis(JoystickMap.LEFT_X_AXIS),
+                  () -> driverJoystick.getRawAxis(JoystickMap.LEFT_Y_AXIS),
+                  () -> driverJoystick.getRawAxis(JoystickMap.RIGHT_X_AXIS)));
+}
+```
+
+Now if all the wheels aren't moving the same direction that okay. In `Constants.java` the code below will let you change the directions independly for each module.
+
+**Make sure when you move the left stick forward and all the wheels are spining forward**
+
+```java
+public static final boolean kFrontLeftSteerReversed = false;
+public static final boolean kBackLeftSteerReversed = false;
+public static final boolean kFrontRightSteerReversed = false;
+public static final boolean kBackRightSteerReversed = false;
+```
+
+If not change the direction variables for each until they are all moving forward.
+
