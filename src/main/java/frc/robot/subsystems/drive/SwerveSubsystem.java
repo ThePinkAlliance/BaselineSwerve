@@ -242,10 +242,10 @@ public class SwerveSubsystem extends SubsystemBase {
     Logger.recordOutput("Swerve/Heading Cont", gyro.getAngle());
     Logger.recordOutput("Swerve/Continuious Rotation", getRotation2d().getRadians());
 
-    Logger.recordOutput("Swerve/Front Right Temperature", frontRightModule.getMotorTemp());
-    Logger.recordOutput("Swerve/Back Left Temperature", backLeftModule.getMotorTemp());
-    Logger.recordOutput("Swerve/Back Right Temperature", backRightModule.getMotorTemp());
-    Logger.recordOutput("Swerve/Front Left Temperature", frontLeftModule.getMotorTemp());
+    Logger.recordOutput("Swerve/Front Right Velocity", frontRightModule.getDriveVelocity());
+    Logger.recordOutput("Swerve/Back Left Velocity", backLeftModule.getDriveVelocity());
+    Logger.recordOutput("Swerve/Back Right Velocity", backRightModule.getDriveVelocity());
+    Logger.recordOutput("Swerve/Front Left Velocity", frontLeftModule.getDriveVelocity());
 
     Logger.recordOutput("Swerve/Front Right Temperature Overheat Warning", frontRightModule.isMotorOverheated());
     Logger.recordOutput("Swerve/Back Left Temperature Overheat Warning", backLeftModule.isMotorOverheated());

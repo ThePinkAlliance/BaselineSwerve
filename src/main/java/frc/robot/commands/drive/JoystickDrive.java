@@ -7,8 +7,11 @@ package frc.robot.commands.drive;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.SwerveSubsystem;
@@ -19,18 +22,20 @@ public class JoystickDrive extends Command {
   private Supplier<Double> xInput, yInput, rotInput;
   private SlewRateLimiter xLimiter, yLimiter;
   private boolean useFieldCentric;
+  private double startTime;
 
   /** Creates a new JoystickDrive. */
   public JoystickDrive(SwerveSubsystem swerveSubsystem, Supplier<Double> xInput, Supplier<Double> yInput,
       Supplier<Double> rotInput) {
     // Use addRequirements() here to declare subsystem dependencies.
 
-    this.useFieldCentric = true;
+    this.useFieldCentric = false;
 
     this.swerveSubsystem = swerveSubsystem;
     this.xInput = xInput;
     this.yInput = yInput;
     this.rotInput = rotInput;
+    this.startTime = 0;
 
     this.yLimiter = new SlewRateLimiter(Constants.DriveConstants.kTeleDriveMaxAccelerationUnitsPerSecond);
     this.xLimiter = new SlewRateLimiter(Constants.DriveConstants.kTeleDriveMaxAccelerationUnitsPerSecond);
@@ -41,7 +46,7 @@ public class JoystickDrive extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-
+    this.startTime = Timer.getFPGATimestamp();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -66,6 +71,7 @@ public class JoystickDrive extends Command {
 
     ChassisSpeeds speeds = new ChassisSpeeds();
     if (useFieldCentric) {
+      speeds = new ChassisSpeeds(y, x, r);
       double xField = x * robotAngle.getSin() + y * robotAngle.getCos();
       double yField = x * robotAngle.getCos() + y * -robotAngle.getSin();
 
@@ -74,10 +80,21 @@ public class JoystickDrive extends Command {
       speeds = new ChassisSpeeds(y, x, r);
     }
 
+    // Pose2d robot_pose_vel = new Pose2d(speeds.vxMetersPerSecond * 0.02,
+    // speeds.vyMetersPerSecond * 0.02,
+    // Rotation2d.fromRadians(speeds.omegaRadiansPerSecond * 0.02));
+    // Twist2d twist_vel = swerveSubsystem.getCurrentPose().log(robot_pose_vel);
+    // ChassisSpeeds updated_chassis_speeds = new ChassisSpeeds(
+    // twist_vel.dx / 0.02, twist_vel.dy / 0.02, twist_vel.dtheta / 0.02);
+
     Logger.recordOutput("Commands/JoystickDrive/vx_input", speeds.vxMetersPerSecond);
     Logger.recordOutput("Commands/JoystickDrive/vy_input", speeds.vyMetersPerSecond);
     Logger.recordOutput("Commands/JoystickDrive/omega_input", speeds.omegaRadiansPerSecond);
+
     Logger.recordOutput("Commands/JoystickDrive/robot_heading", robotAngle.getDegrees());
+    Logger.recordOutput("Commands/JoystickDrive/robot_heading_rad", robotAngle.getRadians());
+    Logger.recordOutput("Commands/JoystickDrive/drift_over_time",
+        (robotAngle.getRadians() / (startTime - Timer.getFPGATimestamp())));
 
     swerveSubsystem.setStates(speeds);
   }
