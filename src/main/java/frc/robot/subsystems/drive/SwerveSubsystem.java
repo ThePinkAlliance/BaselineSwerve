@@ -17,6 +17,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.GainsFX;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ModuleConstants;
 import frc.robot.subsystems.drive.modules.WPI_SwerveModule;
@@ -48,22 +49,26 @@ public class SwerveSubsystem extends SubsystemBase {
     this.frontRightModule = new WPI_SwerveModule(DriveConstants.kFrontRightTurningMotorPort,
         DriveConstants.kFrontRightDriveMotorPort, DriveConstants.kFrontRightDriveCANCoderPort,
         DriveConstants.kFrontRightDriveEncoderReversed,
-        DriveConstants.kFrontRightDriveAbsoluteEncoderOffsetRad, ModuleConstants.kFrontRightSteerGains, "rio");
+        DriveConstants.kFrontRightDriveAbsoluteEncoderOffsetRad, ModuleConstants.kFrontRightSteerGains,
+        new GainsFX(0.50, 0, 0, 0, 0, 20), "rio");
 
     this.frontLeftModule = new WPI_SwerveModule(DriveConstants.kFrontLeftTurningMotorPort,
         DriveConstants.kFrontLeftDriveMotorPort, DriveConstants.kFrontLeftDriveCANCoderPort,
         DriveConstants.kFrontLeftDriveEncoderReversed,
-        DriveConstants.kFrontLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kFrontLeftSteerGains, "rio");
+        DriveConstants.kFrontLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kFrontLeftSteerGains,
+        new GainsFX(0.50, 0, 0, 0, 0, 20), "rio");
 
     this.backRightModule = new WPI_SwerveModule(DriveConstants.kBackRightTurningMotorPort,
         DriveConstants.kBackRightDriveMotorPort, DriveConstants.kBackRightDriveCANCoderPort,
         DriveConstants.kBackRightDriveEncoderReversed,
-        DriveConstants.kBackRightDriveAbsoluteEncoderOffsetRad, ModuleConstants.kBackRightSteerGains, "rio");
+        DriveConstants.kBackRightDriveAbsoluteEncoderOffsetRad, ModuleConstants.kBackRightSteerGains,
+        new GainsFX(0.51, 0, 0, 0, 0, 20), "rio");
 
     this.backLeftModule = new WPI_SwerveModule(DriveConstants.kBackLeftTurningMotorPort,
         DriveConstants.kBackLeftDriveMotorPort, DriveConstants.kBackLeftDriveCANCoderPort,
         DriveConstants.kBackLeftDriveEncoderReversed,
-        DriveConstants.kBackLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kBackLeftSteerGains, "rio");
+        DriveConstants.kBackLeftDriveAbsoluteEncoderOffsetRad, ModuleConstants.kBackLeftSteerGains,
+        new GainsFX(0.50, 0, 0, 0, 0, 20), "rio");
 
     this.kinematics = kinematics;
 
@@ -144,7 +149,6 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public void setStates(ChassisSpeeds speeds) {
     // Looper is how far into the future are we looking
-    double looper = .01;
 
     /**
      * The three lines below allow you to change the directions of each chassis
@@ -179,8 +183,8 @@ public class SwerveSubsystem extends SubsystemBase {
      * looper and etc.
      */
     Pose2d currentPose = getCurrentPose();
-    SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
 
+    SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
     /**
      * Update the pose2d in advantagekit its not in periodic becase we want to only
      * send data when the pose changes

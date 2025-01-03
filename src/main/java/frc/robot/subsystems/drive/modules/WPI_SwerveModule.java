@@ -10,6 +10,8 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.ControlRequest;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
@@ -20,6 +22,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.Gains;
+import frc.lib.GainsFX;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.SwerveModule;
 import org.littletonrobotics.junction.Logger;
@@ -40,7 +43,7 @@ public class WPI_SwerveModule implements SwerveModule {
 
   public WPI_SwerveModule(int steerId, int driveId, int canCoderId, boolean invertDrive,
       double absoluteEncoderOffsetRad,
-      Gains steerGains, String network) {
+      Gains steerGains, GainsFX driveGains, String network) {
     this.canCoder = new CANcoder(canCoderId, network);
     this.steerMotor = new TalonFX(steerId, network);
     this.driveMotor = new TalonFX(driveId, network);
@@ -52,9 +55,15 @@ public class WPI_SwerveModule implements SwerveModule {
     // This could be increased to 60 probably
     driveCurrentLimit.SupplyCurrentLimit = 45;
     driveCurrentLimit.SupplyCurrentLimitEnable = true;
-
     driveOpenloopConfig.DutyCycleOpenLoopRampPeriod = 0.5;
 
+    driveConfig.Slot0.kP = driveGains.kP;
+    driveConfig.Slot0.kI = driveGains.kI;
+    driveConfig.Slot0.kD = driveGains.kD;
+    driveConfig.Slot0.kV = driveGains.kV;
+    driveConfig.Slot0.kS = driveGains.kS;
+
+    driveConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.25;
     driveConfig.OpenLoopRamps = driveOpenloopConfig;
     driveConfig.CurrentLimits = driveCurrentLimit;
 
@@ -71,9 +80,7 @@ public class WPI_SwerveModule implements SwerveModule {
     this.driveMotor.setNeutralMode(NeutralModeValue.Brake);
 
     CANcoderConfiguration config = new CANcoderConfiguration();
-
     config.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
-
     this.canCoder.getConfigurator().apply(config);
 
     resetEncoders();
@@ -111,7 +118,9 @@ public class WPI_SwerveModule implements SwerveModule {
   public double getDriveVelocity() {
     double selected_velocity = driveMotor.getVelocity().getValueAsDouble();
 
-    return selected_velocity * Constants.ModuleConstants.kDriveMotorGearRatio;
+    return selected_velocity
+        * (Constants.ModuleConstants.kDriveMotorGearRatio * (Constants.ModuleConstants.kWheelDiameterMeters
+            * Math.PI));
   }
 
   @Override
@@ -179,18 +188,27 @@ public class WPI_SwerveModule implements SwerveModule {
   @Override
   public void setDesiredState(SwerveModuleState state) {
     state = SwerveModuleState.optimize(state, getState().angle);
-    driveMotor
-        .setVoltage(
-            (state.speedMetersPerSecond / Constants.DriveConstants.kPhysicalMaxSpeedMetersPerSecond) * 12);
+    double desiredVelocity = state.speedMetersPerSecond
+        / (Constants.ModuleConstants.kDriveMotorGearRatio * (Constants.ModuleConstants.kWheelDiameterMeters
+            * Math.PI));
+    double currentVel = this.driveMotor.getVelocity().getValueAsDouble() / 0.50;
+    var req = new VelocityVoltage(desiredVelocity);
+
+    req.withAcceleration((currentVel - desiredVelocity) / 0.02);
+
+    driveMotor.setControl(req);
 
     double output = steerController.calculate(getSteerPosition(), state.angle.getRadians());
     if (invertSteer) {
       output *= -1;
     }
+
     Logger.recordOutput("Swerve/" + this.driveMotor.getDeviceID() + "/rpm",
         this.driveMotor.getRotorVelocity().getValueAsDouble());
     Logger.recordOutput("Swerve/" + this.driveMotor.getDeviceID() + "/steer",
         output);
+    Logger.recordOutput("Swerve/" + this.driveMotor.getDeviceID() + "/desired_rpm",
+        desiredVelocity);
     steerMotor.set(output);
   }
 

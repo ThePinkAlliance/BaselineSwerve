@@ -29,7 +29,7 @@ public class JoystickDrive extends Command {
       Supplier<Double> rotInput) {
     // Use addRequirements() here to declare subsystem dependencies.
 
-    this.useFieldCentric = false;
+    this.useFieldCentric = true;
 
     this.swerveSubsystem = swerveSubsystem;
     this.xInput = xInput;
@@ -80,12 +80,13 @@ public class JoystickDrive extends Command {
       speeds = new ChassisSpeeds(y, x, r);
     }
 
-    // Pose2d robot_pose_vel = new Pose2d(speeds.vxMetersPerSecond * 0.02,
-    // speeds.vyMetersPerSecond * 0.02,
-    // Rotation2d.fromRadians(speeds.omegaRadiansPerSecond * 0.02));
-    // Twist2d twist_vel = swerveSubsystem.getCurrentPose().log(robot_pose_vel);
-    // ChassisSpeeds updated_chassis_speeds = new ChassisSpeeds(
-    // twist_vel.dx / 0.02, twist_vel.dy / 0.02, twist_vel.dtheta / 0.02);
+    double loop = 0.02;
+    Pose2d robot_pose_vel = new Pose2d(speeds.vxMetersPerSecond * loop,
+        speeds.vyMetersPerSecond * loop,
+        Rotation2d.fromRadians(speeds.omegaRadiansPerSecond * loop));
+    Twist2d twist_vel = new Pose2d().log(robot_pose_vel);
+    speeds = new ChassisSpeeds(
+        twist_vel.dx / loop, twist_vel.dy / loop, twist_vel.dtheta / loop);
 
     Logger.recordOutput("Commands/JoystickDrive/vx_input", speeds.vxMetersPerSecond);
     Logger.recordOutput("Commands/JoystickDrive/vy_input", speeds.vyMetersPerSecond);
