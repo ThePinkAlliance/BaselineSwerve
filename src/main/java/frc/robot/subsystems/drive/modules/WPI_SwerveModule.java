@@ -193,7 +193,6 @@ public class WPI_SwerveModule implements SwerveModule {
             * Math.PI));
     double currentVel = this.driveMotor.getVelocity().getValueAsDouble() / 0.50;
     var req = new VelocityVoltage(desiredVelocity);
-
     req.withAcceleration((currentVel - desiredVelocity) / 0.02);
 
     driveMotor.setControl(req);

@@ -72,20 +72,16 @@ public class JoystickDrive extends Command {
 
     ChassisSpeeds speeds = new ChassisSpeeds();
     if (useFieldCentric) {
-      // double xField = x * robotAngle.getSin() + y * robotAngle.getCos();
-      // double yField = x * robotAngle.getCos() + y * -robotAngle.getSin();
-
-      var rotated = new Translation2d(x, y).rotateBy(robotAngle);
-      speeds = new ChassisSpeeds(rotated.getX(), rotated.getY(), r);
       speeds = ChassisSpeeds.discretize(speeds, 0.02);
+      speeds = ChassisSpeeds.fromRobotRelativeSpeeds(speeds, robotAngle);
     } else {
-      speeds = new ChassisSpeeds(y, x, r);
+      speeds = new ChassisSpeeds(x, y, r);
     }
 
     double loop = 0.02;
     Pose2d robot_pose_vel = new Pose2d(speeds.vxMetersPerSecond * loop,
         speeds.vyMetersPerSecond * loop,
-        Rotation2d.fromRadians(speeds.omegaRadiansPerSecond * loop * 2));
+        Rotation2d.fromRadians(speeds.omegaRadiansPerSecond * loop));
     Twist2d twist_vel = new Pose2d().log(robot_pose_vel);
     speeds = new ChassisSpeeds(
         twist_vel.dx / loop, twist_vel.dy / loop, (twist_vel.dtheta / loop));
