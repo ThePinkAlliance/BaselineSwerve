@@ -192,23 +192,26 @@ public class WPI_SwerveModule implements SwerveModule {
         / (Constants.ModuleConstants.kDriveMotorGearRatio * (Constants.ModuleConstants.kWheelDiameterMeters
             * Math.PI));
     double currentVel = this.driveMotor.getVelocity().getValueAsDouble() / 0.50;
-    var req = new VelocityVoltage(desiredVelocity);
-    req.withAcceleration((currentVel - desiredVelocity) / 0.02);
-
-    driveMotor.setControl(req);
 
     double output = steerController.calculate(getSteerPosition(), state.angle.getRadians());
     if (invertSteer) {
       output *= -1;
     }
 
+    // cos-sign compensation
+    desiredVelocity *= Math.cos(steerController.getPositionError());
+
+    var req = new VelocityVoltage(desiredVelocity);
+    req.withAcceleration((currentVel - desiredVelocity) / 0.02);
+
+    steerMotor.set(output);
+    driveMotor.setControl(req);
     Logger.recordOutput("Swerve/" + this.driveMotor.getDeviceID() + "/rpm",
         this.driveMotor.getRotorVelocity().getValueAsDouble());
     Logger.recordOutput("Swerve/" + this.driveMotor.getDeviceID() + "/steer",
         output);
     Logger.recordOutput("Swerve/" + this.driveMotor.getDeviceID() + "/desired_rpm",
         desiredVelocity);
-    steerMotor.set(output);
   }
 
   @Override
